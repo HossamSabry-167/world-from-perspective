@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" dir="{{DIR}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} — {{SITE_TITLE}}</title>
+<meta name="description" content="{{EXCERPT}}">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <h1 class="site-title"><a href="../../">{{SITE_TITLE}}</a></h1>
+      <p class="site-tagline">{{SITE_TAGLINE}}</p>
+    </div>
+  </header>
+  <main>
+    <a class="back-link" href="../../">{{BACK_LABEL}}</a>
+    <article dir="{{DIR}}">
+      <header class="post-header">
+        <h1 class="post-title">{{TITLE}}</h1>
+        <p class="post-meta">{{DATE}}</p>
+      </header>
+      <div class="post-content">
+        {{CONTENT}}
+      </div>
+    </article>
+  </main>
+  <footer class="site-footer">{{FOOTER_TEXT}}</footer>
+</body>
+</html>
