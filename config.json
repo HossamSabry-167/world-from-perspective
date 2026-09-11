@@ -1,8 +1,9 @@
 {
-  "site_title": "World From Perspective",
-  "site_tagline": "Journeys, discoveries, and everyday moments \u2014 seen from here.",
+  "site_title": "من شبه واقعي",
+  "site_tagline": "",
   "site_url": "",
   "accent_color": "#b5643a",
   "footer_text": "\u00a9 World From Perspective",
-  "posts_per_page": 12
+    "posts_per_page": 12,
+  "web3forms_access_key": "82e046b7-aad5-4e3e-83ea-c4b993231d28"
 }
