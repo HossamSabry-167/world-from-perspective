@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>صورة بحق 43 — World From Perspective</title>
+<title>صورة بحق 43 — من شبه واقعي</title>
 <meta name="description" content="لأن الصورة ليست مجرد حفظ لهيئة أو شكل، بل انتزاعاً للحظةٍ من قبضة الزمن الذي لا يترك لشكلٍ ولا لهيئةٍ حقا في الديمومة، ولأن الصورة تقتبس بعضا من حرارة اللحظة التي التقطتها غير…">
 <link rel="stylesheet" href="../../assets/style.css?v=a5f8f046">
 </head>
 <body>
   <header class="site-header">
     <div class="site-header-inner">
-      <h1 class="site-title"><a href="../../">World From Perspective</a></h1>
-      <p class="site-tagline">Journeys, discoveries, and everyday moments — seen from here.</p>
+      <h1 class="site-title"><a href="../../">من شبه واقعي</a></h1>
+      <p class="site-tagline"></p>
     </div>
   </header>
   <main>
@@ -25,7 +25,52 @@
         <p>لأن الصورة ليست مجرد حفظ لهيئة أو شكل، بل انتزاعاً للحظةٍ من قبضة الزمن الذي لا يترك لشكلٍ ولا لهيئةٍ حقا في الديمومة، ولأن الصورة تقتبس بعضا من حرارة اللحظة التي التقطتها غير مكتفيةٍ بالتقاط حالة الناس فيها، بل تزيد بأن تلتقط شهود الجوامد على تلك الحالة...</p><p>أعلنُ تلك الصورة صورتي المفضلة بين كل الصور التي اخترتُ أو أُجبرتُ على الظهور فيها. فتلك الصورةُ- بالنسبة لي على الأقل- شاهدةٌ على أنًّ من كانوا في تلك الغرفة في تلك الساعة قد انتزعوا لحظة من الفرح الصادق. </p><p><img src="images/img1.jpg" /></p>
       </div>
     </article>
-    <section class="comment-section" dir="rtl"><h2 class="comment-heading">اترك رسالة</h2><p class="comment-disabled">التعليقات غير مفعّلة بعد.</p></section>
+    <section class="comment-section" dir="rtl">
+      <h2 class="comment-heading">اترك رسالة</h2>
+      <form class="comment-form" id="comment-form">
+        <input type="hidden" name="access_key" value="82e046b7-aad5-4e3e-83ea-c4b993231d28">
+        <input type="hidden" name="subject" value="New reply on: صورة بحق 43">
+        <input type="checkbox" name="botcheck" class="comment-botcheck" tabindex="-1" autocomplete="off">
+        <div class="comment-field">
+          <label for="comment-name">اسمك (سيظهر مع رسالتك)</label>
+          <input type="text" id="comment-name" name="name" required maxlength="60">
+        </div>
+        <div class="comment-field">
+          <label for="comment-message">رسالتك</label>
+          <textarea id="comment-message" name="message" rows="4" required maxlength="4000"></textarea>
+        </div>
+        <button type="submit">إرسال</button>
+        <p class="comment-status" aria-live="polite"></p>
+      </form>
+      <script>
+      (function () {
+        var form = document.getElementById('comment-form');
+        var status = form.querySelector('.comment-status');
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          status.textContent = 'جارٍ الإرسال…';
+          status.className = 'comment-status';
+          fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: new FormData(form)
+          }).then(function (r) { return r.json(); }).then(function (data) {
+            if (data.success) {
+              status.textContent = 'تم الإرسال، شكرًا لك!';
+              status.className = 'comment-status comment-status-ok';
+              form.reset();
+            } else {
+              status.textContent = 'حدث خطأ، حاول مرة أخرى.';
+              status.className = 'comment-status comment-status-error';
+            }
+          }).catch(function () {
+            status.textContent = 'حدث خطأ، حاول مرة أخرى.';
+            status.className = 'comment-status comment-status-error';
+          });
+        });
+      })();
+      </script>
+    </section>
   </main>
   <footer class="site-footer">© World From Perspective</footer>
 </body>
