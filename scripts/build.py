@@ -67,6 +67,7 @@ def load_config():
         "accent_color": "#b5643a",
         "posts_per_page": 12,
         "web3forms_access_key": "",
+        "goatcounter_code": "",
     }
     if CONFIG_PATH.exists():
         default.update(json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
@@ -160,6 +161,16 @@ def find_first_image(html_text):
     return m.group(1) if m else None
 
 
+def render_analytics_script(config):
+    code = (config.get("goatcounter_code") or "").strip()
+    if not code:
+        return ""
+    return (
+        f'<script data-goatcounter="https://{code}.goatcounter.com/count" '
+        f'async src="//gc.zgo.at/count.js"></script>'
+    )
+
+
 def render_comment_section(config, title, rtl):
     key = (config.get("web3forms_access_key") or "").strip()
     labels = {
@@ -234,7 +245,7 @@ def render_comment_section(config, title, rtl):
     </section>'''
 
 
-def build_post(docx_path, config, css_version):
+def build_post(docx_path, config, css_version, analytics_script):
     stem = docx_path.stem
     date_match = DATE_PREFIX_RE.match(stem)
     prefix_date = date_match.group(1) if date_match else None
@@ -299,6 +310,7 @@ def build_post(docx_path, config, css_version):
         FOOTER_TEXT=config["footer_text"],
         CSS_VERSION=css_version,
         COMMENT_SECTION=comment_section,
+        ANALYTICS_SCRIPT=analytics_script,
     )
     (post_dir / "index.html").write_text(post_html, encoding="utf-8")
 
@@ -312,7 +324,7 @@ def build_post(docx_path, config, css_version):
     }
 
 
-def render_index(posts, config, css_version):
+def render_index(posts, config, css_version, analytics_script):
     posts_sorted = sorted(posts, key=lambda p: p["date"], reverse=True)
     if posts_sorted:
         cards = []
@@ -344,6 +356,7 @@ def render_index(posts, config, css_version):
         POST_CARDS=cards_html,
         FOOTER_TEXT=config["footer_text"],
         CSS_VERSION=css_version,
+        ANALYTICS_SCRIPT=analytics_script,
     )
     (DOCS_DIR / "index.html").write_text(index_html, encoding="utf-8")
 
@@ -369,6 +382,7 @@ def main():
     DOCS_DIR.mkdir(exist_ok=True)
 
     css_version = copy_assets(config)
+    analytics_script = render_analytics_script(config)
 
     posts_root = DOCS_DIR / "posts"
     if posts_root.exists():
@@ -381,9 +395,9 @@ def main():
         if docx_path.name.startswith("~$"):
             continue  # Word temp/lock file
         print(f"Building: {docx_path.name}")
-        posts.append(build_post(docx_path, config, css_version))
+        posts.append(build_post(docx_path, config, css_version, analytics_script))
 
-    render_index(posts, config, css_version)
+    render_index(posts, config, css_version, analytics_script)
     (DOCS_DIR / ".nojekyll").touch()
     print(f"Done. Built {len(posts)} post(s) into docs/.")
 
