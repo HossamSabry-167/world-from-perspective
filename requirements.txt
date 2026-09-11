@@ -1,1 +1,2 @@
-mammoth python-docx
+mammoth
+python-docx
