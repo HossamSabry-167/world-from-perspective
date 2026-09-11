@@ -66,6 +66,7 @@ def load_config():
         "footer_text": "",
         "accent_color": "#b5643a",
         "posts_per_page": 12,
+        "web3forms_access_key": "",
     }
     if CONFIG_PATH.exists():
         default.update(json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
@@ -159,6 +160,80 @@ def find_first_image(html_text):
     return m.group(1) if m else None
 
 
+def render_comment_section(config, title, rtl):
+    key = (config.get("web3forms_access_key") or "").strip()
+    labels = {
+        "heading": "اترك رسالة" if rtl else "Leave a reply",
+        "nickname": "اسمك (سيظهر مع رسالتك)" if rtl else "Your name",
+        "message": "رسالتك" if rtl else "Your message",
+        "send": "إرسال" if rtl else "Send",
+        "sending": "جارٍ الإرسال…" if rtl else "Sending…",
+        "success": "تم الإرسال، شكرًا لك!" if rtl else "Sent — thank you!",
+        "error": "حدث خطأ، حاول مرة أخرى." if rtl else "Something went wrong — please try again.",
+        "missing_name": "من فضلك أدخل اسمك." if rtl else "Please enter your name.",
+    }
+
+    if not key:
+        note = (
+            "التعليقات غير مفعّلة بعد." if rtl
+            else "Comments aren't set up yet."
+        )
+        return (
+            f'<section class="comment-section" dir="{"rtl" if rtl else "ltr"}">'
+            f'<h2 class="comment-heading">{labels["heading"]}</h2>'
+            f'<p class="comment-disabled">{note}</p>'
+            f"</section>"
+        )
+
+    safe_title = title.replace('"', "&quot;")
+    return f'''<section class="comment-section" dir="{"rtl" if rtl else "ltr"}">
+      <h2 class="comment-heading">{labels["heading"]}</h2>
+      <form class="comment-form" id="comment-form">
+        <input type="hidden" name="access_key" value="{key}">
+        <input type="hidden" name="subject" value="New reply on: {safe_title}">
+        <input type="checkbox" name="botcheck" class="comment-botcheck" tabindex="-1" autocomplete="off">
+        <div class="comment-field">
+          <label for="comment-name">{labels["nickname"]}</label>
+          <input type="text" id="comment-name" name="name" required maxlength="60">
+        </div>
+        <div class="comment-field">
+          <label for="comment-message">{labels["message"]}</label>
+          <textarea id="comment-message" name="message" rows="4" required maxlength="4000"></textarea>
+        </div>
+        <button type="submit">{labels["send"]}</button>
+        <p class="comment-status" aria-live="polite"></p>
+      </form>
+      <script>
+      (function () {{
+        var form = document.getElementById('comment-form');
+        var status = form.querySelector('.comment-status');
+        form.addEventListener('submit', function (e) {{
+          e.preventDefault();
+          status.textContent = {labels["sending"]!r};
+          status.className = 'comment-status';
+          fetch('https://api.web3forms.com/submit', {{
+            method: 'POST',
+            headers: {{ 'Accept': 'application/json' }},
+            body: new FormData(form)
+          }}).then(function (r) {{ return r.json(); }}).then(function (data) {{
+            if (data.success) {{
+              status.textContent = {labels["success"]!r};
+              status.className = 'comment-status comment-status-ok';
+              form.reset();
+            }} else {{
+              status.textContent = {labels["error"]!r};
+              status.className = 'comment-status comment-status-error';
+            }}
+          }}).catch(function () {{
+            status.textContent = {labels["error"]!r};
+            status.className = 'comment-status comment-status-error';
+          }});
+        }});
+      }})();
+      </script>
+    </section>'''
+
+
 def build_post(docx_path, config, css_version):
     stem = docx_path.stem
     date_match = DATE_PREFIX_RE.match(stem)
@@ -208,6 +283,7 @@ def build_post(docx_path, config, css_version):
 
     excerpt = make_excerpt(content_html)
     thumb_rel = find_first_image(content_html)
+    comment_section = render_comment_section(config, title, rtl)
 
     post_html = fill(
         load_template("post.html"),
@@ -222,6 +298,7 @@ def build_post(docx_path, config, css_version):
         BACK_LABEL=("\u2192 عودة إلى كل المقالات" if rtl else "\u2190 Back to all posts"),
         FOOTER_TEXT=config["footer_text"],
         CSS_VERSION=css_version,
+        COMMENT_SECTION=comment_section,
     )
     (post_dir / "index.html").write_text(post_html, encoding="utf-8")
 
