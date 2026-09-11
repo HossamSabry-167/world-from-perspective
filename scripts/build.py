@@ -159,7 +159,7 @@ def find_first_image(html_text):
     return m.group(1) if m else None
 
 
-def build_post(docx_path, config):
+def build_post(docx_path, config, css_version):
     stem = docx_path.stem
     date_match = DATE_PREFIX_RE.match(stem)
     prefix_date = date_match.group(1) if date_match else None
@@ -221,6 +221,7 @@ def build_post(docx_path, config):
         CONTENT=content_html,
         BACK_LABEL=("\u2192 عودة إلى كل المقالات" if rtl else "\u2190 Back to all posts"),
         FOOTER_TEXT=config["footer_text"],
+        CSS_VERSION=css_version,
     )
     (post_dir / "index.html").write_text(post_html, encoding="utf-8")
 
@@ -234,7 +235,7 @@ def build_post(docx_path, config):
     }
 
 
-def render_index(posts, config):
+def render_index(posts, config, css_version):
     posts_sorted = sorted(posts, key=lambda p: p["date"], reverse=True)
     if posts_sorted:
         cards = []
@@ -265,11 +266,13 @@ def render_index(posts, config):
         SITE_TAGLINE=config["site_tagline"],
         POST_CARDS=cards_html,
         FOOTER_TEXT=config["footer_text"],
+        CSS_VERSION=css_version,
     )
     (DOCS_DIR / "index.html").write_text(index_html, encoding="utf-8")
 
 
 def copy_assets(config):
+    import hashlib
     dest = DOCS_DIR / "assets"
     if dest.exists():
         shutil.rmtree(dest)
@@ -278,11 +281,17 @@ def copy_assets(config):
     css = css_path.read_text(encoding="utf-8")
     css = css.replace("#b5643a", config["accent_color"])
     css_path.write_text(css, encoding="utf-8")
+    # A short hash of the CSS, appended as ?v=... on the stylesheet link so
+    # browsers fetch a fresh copy whenever the styling actually changes,
+    # instead of reusing a stale cached version.
+    return hashlib.md5(css.encode("utf-8")).hexdigest()[:8]
 
 
 def main():
     config = load_config()
     DOCS_DIR.mkdir(exist_ok=True)
+
+    css_version = copy_assets(config)
 
     posts_root = DOCS_DIR / "posts"
     if posts_root.exists():
@@ -295,10 +304,9 @@ def main():
         if docx_path.name.startswith("~$"):
             continue  # Word temp/lock file
         print(f"Building: {docx_path.name}")
-        posts.append(build_post(docx_path, config))
+        posts.append(build_post(docx_path, config, css_version))
 
-    render_index(posts, config)
-    copy_assets(config)
+    render_index(posts, config, css_version)
     (DOCS_DIR / ".nojekyll").touch()
     print(f"Done. Built {len(posts)} post(s) into docs/.")
 
